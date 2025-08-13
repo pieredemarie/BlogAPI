@@ -1,12 +1,16 @@
 package storage
 
 import (
+	"BlogAPI/pkg/jwtutils"
 	"database/sql"
 	"errors"
 	"log"
+	"os"
 
 	"golang.org/x/crypto/bcrypt"
 )
+
+
 
 type PostgresStorage struct {
 	db *sql.DB
@@ -43,8 +47,11 @@ func (p *PostgresStorage) Register(newUser User) error {
 }
 
 func (p *PostgresStorage) Login(email, password string) (string, error) {
-	var pass string
-	err := p.db.QueryRow("SELECT (password) FROM users WHERE email = $1",email).Scan(&pass)
+	var (
+		pass string 
+		userID int
+	)
+	err := p.db.QueryRow("SELECT (id,password) FROM users WHERE email = $1",email).Scan(&userID,&pass)
 	if err == sql.ErrNoRows {
 		return "", errors.New("user not found")
 	}
@@ -54,12 +61,37 @@ func (p *PostgresStorage) Login(email, password string) (string, error) {
 		return "", errors.New("wrong password")
 	}
 
-	// here wil be JWT logic but i don't want it right now
-	// just because i'm lazy bruh
-	// maaan i got tired after writing ten code lines
-	// it pissed me off every time i open vs code
-	//TODO: 
-	///сделать JWT в отдельном пакете и сюда присобачить
-	//желательно сегодня.
-	return "dummy-token", nil
+	secret := os.Getenv("JWT_SECRET")
+
+	token, err := jwtutils.GenerateToken(userID,secret)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
+}
+
+func (p *PostgresStorage) GetUserById(id int) (*User, error) {
+	var user User 
+	err := p.db.QueryRow(
+		"SELECT id, username, email FROM users WHERE id = $1",
+		id,
+	).Scan(&user.ID,&user.Username,&user.Email)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (p *PostgresStorage) UpdateProfile(id int,username, email, hashedPass string) error {
+	_, err := p.db.Exec(`
+		UPDATE users 
+		SET username = COALESCE($1, username),
+            email = COALESCE($2, email),
+            password_hash = COALESCE($3, password_hash)
+        WHERE id = $4`,username,email,hashedPass,id,
+	)
+	return err
 }
