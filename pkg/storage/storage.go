@@ -26,14 +26,12 @@ type Login struct {
 type AuthStorage interface {
 	Login(email, password string) (string, error)
 	Register(data User) error
-
 }
 
-//
 type PostStorage interface {
-	GetPosts(limit int) ([]Post, error)
+	GetPosts(limit int) (*[]Post, error)
 	GetPostById(ID int) (Post, error)
 	CreatePost(info Post) (error)
-	EditPost(ID int, newData Post) (error)
+	EditPost(postID int, authorID int, title *string, content *string) (error)
 	DeletePost(ID int) (error)
 }
