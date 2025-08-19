@@ -23,7 +23,7 @@ func (h *Handler) RegisterHandler(c *gin.Context) { //auth/register
         Email:    newUser.Email,
         Password: newUser.Password,
 	}
-	if err := h.storage.Register(user); err != nil {
+	if err := h.Storage.Register(user); err != nil {
 		c.JSON(http.StatusBadRequest,ErrorResponce{
 			Message: err.Error(),
 		})
@@ -42,7 +42,7 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 		})
 		return
 	}
-	token, err := h.storage.Login(log.Email,log.Password); 
+	token, err := h.Storage.Login(log.Email,log.Password); 
 	if err != nil {
 		c.JSON(http.StatusBadRequest,ErrorResponce{
 			Message: err.Error(),
@@ -58,7 +58,7 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 func (h *Handler) GetProfile(c *gin.Context) { // GET  users/me
 	userID, _ := c.Get("userID")
 
-	user, err := h.storage.GetUserById(userID.(int))
+	user, err := h.Storage.GetUserById(userID.(int))
 	if err != nil {
 		c.JSON(http.StatusNotFound,gin.H{"error": "User not found"})
 		return
@@ -86,7 +86,7 @@ func (h *Handler) UpdateProfile(c *gin.Context) {
 		hashedPass = string(hash)
 	}
 
-	err := h.storage.UpdateProfile(UserID.(int), req.Username,req.Email,hashedPass)
+	err := h.Storage.UpdateProfile(UserID.(int), req.Username,req.Email,hashedPass)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError,gin.H{"error": "update failed"})
 		return

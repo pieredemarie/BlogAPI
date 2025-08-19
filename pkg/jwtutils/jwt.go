@@ -31,7 +31,7 @@ func JWTMidlleware(secret string) gin.HandlerFunc {
 		}
 
 		token, err := jwt.Parse(tokenParts[1], func(t *jwt.Token) (interface{}, error) {
-			return []byte(secret), nil
+			return []byte(secret), nil	
 		})
 
 		if err != nil || !token.Valid {

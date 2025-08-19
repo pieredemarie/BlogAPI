@@ -3,7 +3,7 @@ package auth
 import "BlogAPI/pkg/storage"
 
 type Handler struct {
-	storage *storage.PostgresStorage
+	Storage *storage.PostgresStorage
 }
 
 type ErrorResponce struct {

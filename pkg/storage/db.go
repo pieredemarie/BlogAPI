@@ -170,7 +170,7 @@ func (p *PostgresStorage) EditPost(postID int, authorID int, title *string, cont
     return err
 }
 
-func (p *PostgresStorage) DeletePost(ID int) (error) {
+func (p *PostgresStorage) DeletePost(ID int) error {
 	_,err := p.db.Exec(`
 		DELETE FROM posts WHERE id = $1
 	`,ID)
